@@ -79,7 +79,10 @@ class GoodWeApi:
             logging.warning(date_s + " - Received bad data " + str(data))
             return result
 
-        eday_kwh = data[0]['p']
+        eday_kwh = 0
+        for day in data:
+            if day['d'] == date.strftime('%m/%d/%Y'):
+                eday_kwh = day['p']
 
         payload = {
             'id' : self.system_id,
@@ -97,18 +100,17 @@ class GoodWeApi:
             next_minutes = parsed_date.hour * 60 + parsed_date.minute
             sample['minutes'] = next_minutes - minutes
             minutes = next_minutes
-            eday_from_power += sample['pac'] * sample['minutes']
-        factor = eday_kwh / eday_from_power if eday_from_power > 0 else 1
+            eday_from_power += sample['pac'] * sample['minutes'] / 60 / 1000
+        factor = eday_kwh / eday_from_power if (eday_kwh == 0 or eday_from_power > 0) else 1
 
         eday_kwh = 0
         for sample in data['pacs']:
-            date += timedelta(minutes=sample['minutes'])
             pgrid_w = sample['pac']
-            increase = pgrid_w * sample['minutes'] * factor
+            increase = pgrid_w * sample['minutes'] * factor / 60 / 1000
             if increase > 0:
                 eday_kwh += increase
                 result['entries'].append({
-                    'dt' : date,
+                    'dt' : datetime.strptime(sample['date'], "%m/%d/%Y %H:%M:%S"),
                     'pgrid_w': pgrid_w,
                     'eday_kwh': round(eday_kwh, 3)
                 })
@@ -126,7 +128,7 @@ class GoodWeApi:
                 data = r.json()
                 logging.debug(data)
 
-                if data['msg'] == 'success' and data['data'] is not None:
+                if data['msg'].lower() == 'success' and data['data'] is not None:
                     return data['data']
                 else:
                     loginPayload = { 'account': self.account, 'pwd': self.password }
