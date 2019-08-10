@@ -50,7 +50,7 @@ optional arguments:
                         Dark Sky Weather API key
   --log {debug,info,warning,critical}
                         Set log level (default info)
-  --date YYYY-MM-DD     Copy all readings (max 14/90 days ago)
+  --date YYYY-MM-DD     Copy all readings (max 14/90 days ago) or yesterday to do yesterday's generation
   --pv-voltage		Send pv voltage instead of grid voltage
   --skip-offline        Skip uploads when inverter is offline
   --city CITY           Skip uploads from dusk till dawn
