@@ -5,7 +5,7 @@ import logging
 import argparse
 import locale
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from astral import Astral
 from gw2pvo import ds_api
 from gw2pvo import gw_api
@@ -71,7 +71,10 @@ def run_once(args):
 
 def copy(args):
     # Fetch readings from GoodWe
-    date = datetime.strptime(args.date, "%Y-%m-%d")
+    if args.date == "yesterday":
+    	date = datetime.today() - timedelta(days=1)
+    else:
+        date = datetime.strptime(args.date, "%Y-%m-%d")
 
     gw = gw_api.GoodWeApi(args.gw_station_id, args.gw_account, args.gw_password)
     data = gw.getDayReadings(date)
